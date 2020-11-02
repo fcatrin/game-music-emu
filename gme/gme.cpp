@@ -367,7 +367,7 @@ void gme_free_info( gme_info_t* info )
 }
 
 int  gme_get_waves_count() {
-	return MAX_WAVES;
+	return 4;
 }
 
 #include <stdio.h>
@@ -378,10 +378,11 @@ void gme_get_wave(int wave, int samples[], int length) {
 	length = length < MAX_WAVE_SIZE ? length : MAX_WAVE_SIZE;
 
 	struct wave_buffer *wave_buffer = &wave_buffers[wave];
+	/*
 	if (wave == 0) {
 		printf("read wave data (%d) %d %d %d %d\n", length, wave_buffer->wave[0], wave_buffer->wave[1], wave_buffer->wave[2], wave_buffer->wave[3]);
 		fflush(stdout);
-	}
+	}*/
 	memcpy(samples, wave_buffer->wave, length * sizeof(int));
 }
 
