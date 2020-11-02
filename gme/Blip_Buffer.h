@@ -393,8 +393,12 @@ inline void Blip_Synth<quality,range>::offset_resampled( blip_resampled_time_t t
 		sample = (blip_long) imp [blip_res * (in)] * delta; \
 		buf [out] += sample; \
 		wave_pos = wave_buffer->pos; \
-	    wave_buffer->wave[wave_pos] = sample >> 12; \
-	    wave_buffer->pos = (++wave_pos) % MAX_WAVE_SIZE; \
+		if ((out) & 1) { \
+	    	wave_buffer->wave[wave_pos] += sample >> 12; \
+	    	wave_buffer->pos = (++wave_pos) % MAX_WAVE_SIZE; \
+		} else { \
+			wave_buffer->wave[wave_pos] = sample >> 12; \
+		} \
 	}
 	
 	#define BLIP_FWD( i ) {\
