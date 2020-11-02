@@ -24,7 +24,7 @@ enum { blip_sample_max = 32767 };
 #define MAX_WAVES 20
 
 struct wave_buffer {
-	short int wave[MAX_WAVE_SIZE];
+	int wave[MAX_WAVE_SIZE];
 	int pos;
 };
 

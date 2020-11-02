@@ -366,6 +366,26 @@ void gme_free_info( gme_info_t* info )
 	delete STATIC_CAST(gme_info_t_*,info);
 }
 
+int  gme_get_waves_count() {
+	return MAX_WAVES;
+}
+
+#include <stdio.h>
+
+void gme_get_wave(int wave, int samples[], int length) {
+	if (wave < 0 || wave >= MAX_WAVES) return;
+
+	length = length < MAX_WAVE_SIZE ? length : MAX_WAVE_SIZE;
+
+	struct wave_buffer *wave_buffer = &wave_buffers[wave];
+	if (wave == 0) {
+		printf("read wave data (%d) %d %d %d %d\n", length, wave_buffer->wave[0], wave_buffer->wave[1], wave_buffer->wave[2], wave_buffer->wave[3]);
+		fflush(stdout);
+	}
+	memcpy(samples, wave_buffer->wave, length * sizeof(int));
+}
+
+
 void gme_set_stereo_depth( Music_Emu* me, double depth )
 {
 #if !GME_DISABLE_STEREO_DEPTH
