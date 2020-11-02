@@ -62,7 +62,7 @@ struct Nes_Square : Nes_Envelope
 	Nes_Square( Synth const* s ) : synth( *s ) { }
 	
 	void clock_sweep( int adjust );
-	void run( nes_time_t, nes_time_t );
+	void run( nes_time_t, nes_time_t, int wave_index );
 	void reset() {
 		sweep_delay = 0;
 		Nes_Envelope::reset();
@@ -80,7 +80,7 @@ struct Nes_Triangle : Nes_Osc
 	Blip_Synth<blip_med_quality,1> synth;
 	
 	int calc_amp() const;
-	void run( nes_time_t, nes_time_t );
+	void run( nes_time_t, nes_time_t, int wave_index );
 	void clock_linear_counter();
 	void reset() {
 		linear_counter = 0;
@@ -97,7 +97,7 @@ struct Nes_Noise : Nes_Envelope
 	int noise;
 	Blip_Synth<blip_med_quality,1> synth;
 	
-	void run( nes_time_t, nes_time_t );
+	void run( nes_time_t, nes_time_t, int wave_index );
 	void reset() {
 		noise = 1 << 14;
 		Nes_Envelope::reset();
@@ -135,7 +135,7 @@ struct Nes_Dmc : Nes_Osc
 	
 	void start();
 	void write_register( int, int );
-	void run( nes_time_t, nes_time_t );
+	void run( nes_time_t, nes_time_t, int wave_index );
 	void recalc_irq();
 	void fill_buffer();
 	void reload_sample();

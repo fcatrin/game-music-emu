@@ -124,7 +124,7 @@ void Nes_Namco_Apu::run_until( blip_time_t nes_end_time )
 				if ( delta )
 				{
 					last_amp = sample;
-					synth.offset_resampled( time, delta, output );
+					synth.offset_resampled( time, delta, output, i );
 				}
 				
 				// next sample

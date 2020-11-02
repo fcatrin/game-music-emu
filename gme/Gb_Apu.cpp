@@ -24,6 +24,8 @@ unsigned const status_reg = 0xFF26;
 using std::min;
 using std::max;
 
+#define WAVE_WAVE_INDEX 2
+
 Gb_Apu::Gb_Apu()
 {
 	square1.synth = &square_synth;
@@ -155,10 +157,10 @@ void Gb_Apu::run_until( blip_time_t end_time )
 					playing = -1;
 				switch ( i )
 				{
-				case 0: square1.run( last_time, time, playing ); break;
-				case 1: square2.run( last_time, time, playing ); break;
-				case 2: wave   .run( last_time, time, playing ); break;
-				case 3: noise  .run( last_time, time, playing ); break;
+				case 0: square1.run( last_time, time, playing, i ); break;
+				case 1: square2.run( last_time, time, playing, i ); break;
+				case 2: wave   .run( last_time, time, playing, i ); break;
+				case 3: noise  .run( last_time, time, playing, i ); break;
 				}
 			}
 		}
@@ -227,16 +229,16 @@ void Gb_Apu::write_register( blip_time_t time, unsigned addr, int data )
 			int amp = osc.last_amp;
 			osc.last_amp = 0;
 			if ( amp && osc.enabled && osc.output )
-				other_synth.offset( time, -amp, osc.output );
+				other_synth.offset( time, -amp, osc.output, i );
 		}
 		
 		if ( wave.outputs [3] )
-			other_synth.offset( time, 30, wave.outputs [3] );
+			other_synth.offset( time, 30, wave.outputs [3], WAVE_WAVE_INDEX );
 		
 		update_volume();
 		
 		if ( wave.outputs [3] )
-			other_synth.offset( time, -30, wave.outputs [3] );
+			other_synth.offset( time, -30, wave.outputs [3], WAVE_WAVE_INDEX );
 		
 		// oscs will update with new amplitude when next run
 	}
@@ -259,7 +261,7 @@ void Gb_Apu::write_register( blip_time_t time, unsigned addr, int data )
 				int amp = osc.last_amp;
 				osc.last_amp = 0;
 				if ( amp && old_output )
-					other_synth.offset( time, -amp, old_output );
+					other_synth.offset( time, -amp, old_output, i );
 			}
 		}
 		

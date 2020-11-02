@@ -69,9 +69,12 @@ void Hes_Apu::osc_output( int index, Blip_Buffer* center, Blip_Buffer* left, Bli
 	while ( osc != oscs );
 }
 
-void Hes_Osc::run_until( synth_t& synth_, blip_time_t end_time )
+void Hes_Osc::run_until( synth_t& synth_, blip_time_t end_time, int osc_index )
 {
 	Blip_Buffer* const osc_outputs_0 = outputs [0]; // cache often-used values
+	int wave_index_0 = osc_index * 2;
+	int wave_index_1 = osc_index * 2 + 1;
+
 	if ( osc_outputs_0 && control & 0x80 )
 	{
 		int dac = this->dac;
@@ -80,7 +83,7 @@ void Hes_Osc::run_until( synth_t& synth_, blip_time_t end_time )
 		{
 			int delta = dac * volume_0 - last_amp [0];
 			if ( delta )
-				synth_.offset( last_time, delta, osc_outputs_0 );
+				synth_.offset( last_time, delta, osc_outputs_0, wave_index_0 );
 			osc_outputs_0->set_modified();
 		}
 		
@@ -90,7 +93,7 @@ void Hes_Osc::run_until( synth_t& synth_, blip_time_t end_time )
 		{
 			int delta = dac * volume_1 - last_amp [1];
 			if ( delta )
-				synth_.offset( last_time, delta, osc_outputs_1 );
+				synth_.offset( last_time, delta, osc_outputs_1, wave_index_1 );
 			osc_outputs_1->set_modified();
 		}
 		
@@ -115,9 +118,9 @@ void Hes_Osc::run_until( synth_t& synth_, blip_time_t end_time )
 						if ( delta )
 						{
 							dac = new_dac;
-							synth_.offset( time, delta * volume_0, osc_outputs_0 );
+							synth_.offset( time, delta * volume_0, osc_outputs_0, wave_index_0 );
 							if ( osc_outputs_1 )
-								synth_.offset( time, delta * volume_1, osc_outputs_1 );
+								synth_.offset( time, delta * volume_1, osc_outputs_1, wave_index_1 );
 						}
 						time += period;
 					}
@@ -142,9 +145,9 @@ void Hes_Osc::run_until( synth_t& synth_, blip_time_t end_time )
 						if ( delta )
 						{
 							dac = new_dac;
-							synth_.offset( time, delta * volume_0, osc_outputs_0 );
+							synth_.offset( time, delta * volume_0, osc_outputs_0, wave_index_0 );
 							if ( osc_outputs_1 )
-								synth_.offset( time, delta * volume_1, osc_outputs_1 );
+								synth_.offset( time, delta * volume_1, osc_outputs_1, wave_index_1 );
 						}
 						time += period;
 					}
@@ -239,11 +242,12 @@ void Hes_Apu::write_data( blip_time_t time, int addr, int data )
 		{
 			balance = data;
 			
+			int osc_index = osc_count;
 			Hes_Osc* osc = &oscs [osc_count];
 			do
 			{
 				osc--;
-				osc->run_until( synth, time );
+				osc->run_until( synth, time, --osc_index );
 				balance_changed( *oscs );
 			}
 			while ( osc != oscs );
@@ -252,7 +256,7 @@ void Hes_Apu::write_data( blip_time_t time, int addr, int data )
 	else if ( latch < osc_count )
 	{
 		Hes_Osc& osc = oscs [latch];
-		osc.run_until( synth, time );
+		osc.run_until( synth, time, latch );
 		switch ( addr )
 		{
 		case 0x802:
@@ -303,11 +307,12 @@ void Hes_Apu::write_data( blip_time_t time, int addr, int data )
 void Hes_Apu::end_frame( blip_time_t end_time )
 {
 	Hes_Osc* osc = &oscs [osc_count];
+	int osc_index = osc_count;
 	do
 	{
 		osc--;
 		if ( end_time > osc->last_time )
-			osc->run_until( synth, end_time );
+			osc->run_until( synth, end_time, --osc_index);
 		assert( osc->last_time >= end_time );
 		osc->last_time -= end_time;
 	}

@@ -60,7 +60,7 @@ private:
 	Blip_Synth<blip_good_quality,1> square_synth;
 	
 	void run_until( blip_time_t );
-	void run_square( Vrc6_Osc& osc, blip_time_t );
+	void run_square( Vrc6_Osc& osc, blip_time_t, int wave_index );
 	void run_saw( blip_time_t );
 };
 

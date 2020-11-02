@@ -20,6 +20,16 @@ typedef blip_long blip_time_t;
 typedef short blip_sample_t;
 enum { blip_sample_max = 32767 };
 
+#define MAX_WAVE_SIZE 128
+#define MAX_WAVES 20
+
+struct wave_buffer {
+	short int wave[MAX_WAVE_SIZE];
+	int pos;
+};
+
+extern struct wave_buffer wave_buffers[MAX_WAVES];
+
 class Blip_Buffer {
 public:
 	typedef const char* blargg_err_t;
@@ -207,18 +217,18 @@ public:
 	// Add an amplitude transition of specified delta, optionally into specified buffer
 	// rather than the one set with output(). Delta can be positive or negative.
 	// The actual change in amplitude is delta * (volume / range)
-	void offset( blip_time_t, int delta, Blip_Buffer* ) const;
-	void offset( blip_time_t t, int delta ) const { offset( t, delta, impl.buf ); }
+	void offset( blip_time_t, int delta, Blip_Buffer*, int wave_index ) const;
+	void offset( blip_time_t t, int delta, int wave_index ) const { offset( t, delta, impl.buf, wave_index ); }
 	
 	// Works directly in terms of fractional output samples. Contact author for more info.
-	void offset_resampled( blip_resampled_time_t, int delta, Blip_Buffer* ) const;
+	void offset_resampled( blip_resampled_time_t, int delta, Blip_Buffer*, int wave_index ) const;
 	
 	// Same as offset(), except code is inlined for higher performance
-	void offset_inline( blip_time_t t, int delta, Blip_Buffer* buf ) const {
-		offset_resampled( t * buf->factor_ + buf->offset_, delta, buf );
+	void offset_inline( blip_time_t t, int delta, Blip_Buffer* buf, int wave_index ) const {
+		offset_resampled( t * buf->factor_ + buf->offset_, delta, buf, wave_index );
 	}
-	void offset_inline( blip_time_t t, int delta ) const {
-		offset_resampled( t * impl.buf->factor_ + impl.buf->offset_, delta, impl.buf );
+	void offset_inline( blip_time_t t, int delta, int wave_index ) const {
+		offset_resampled( t * impl.buf->factor_ + impl.buf->offset_, delta, impl.buf, wave_index );
 	}
 	
 private:
@@ -340,7 +350,7 @@ private:
 
 template<int quality,int range>
 inline void Blip_Synth<quality,range>::offset_resampled( blip_resampled_time_t time,
-		int delta, Blip_Buffer* blip_buf ) const
+		int delta, Blip_Buffer* blip_buf, int wave_index ) const
 {
 	// Fails if time is beyond end of Blip_Buffer, due to a bug in caller code or the
 	// need for a longer buffer as set by set_sample_rate().
@@ -348,6 +358,8 @@ inline void Blip_Synth<quality,range>::offset_resampled( blip_resampled_time_t t
 	delta *= impl.delta_factor;
 	blip_long* BLIP_RESTRICT buf = blip_buf->buffer_ + (time >> BLIP_BUFFER_ACCURACY);
 	int phase = (int) (time >> (BLIP_BUFFER_ACCURACY - BLIP_PHASE_BITS) & (blip_res - 1));
+
+	struct wave_buffer *wave_buffer = &wave_buffers[wave_index];
 
 #if BLIP_BUFFER_FAST
 	blip_long left = buf [0] + delta;
@@ -374,8 +386,15 @@ inline void Blip_Synth<quality,range>::offset_resampled( blip_resampled_time_t t
 	
 	// straight forward implementation resulted in better code on GCC for x86
 	
+	blip_long sample = 0;
+	int wave_pos = 0;
+
 	#define ADD_IMP( out, in ) \
-		buf [out] += (blip_long) imp [blip_res * (in)] * delta
+		sample = (blip_long) imp [blip_res * (in)] * delta; \
+		buf [out] += sample; \
+		wave_pos = wave_buffer->pos;
+	    wave_buffer->wave[wave_pos] = sample; \
+	    wave_buffer->pos = ++wave_pos % MAX_WAVE_SIZE;
 	
 	#define BLIP_FWD( i ) {\
 		ADD_IMP( fwd     + i, i     );\
@@ -452,9 +471,9 @@ template<int quality,int range>
 #if BLIP_BUFFER_FAST
 	inline
 #endif
-void Blip_Synth<quality,range>::offset( blip_time_t t, int delta, Blip_Buffer* buf ) const
+void Blip_Synth<quality,range>::offset( blip_time_t t, int delta, Blip_Buffer* buf, int wave_index ) const
 {
-	offset_resampled( t * buf->factor_ + buf->offset_, delta, buf );
+	offset_resampled( t * buf->factor_ + buf->offset_, delta, buf, wave_index );
 }
 
 template<int quality,int range>

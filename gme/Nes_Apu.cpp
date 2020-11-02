@@ -17,6 +17,12 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 
 int const amp_range = 15;
 
+#define WAVE_INDEX_SQUARE1  0
+#define WAVE_INDEX_SQUARE2  1
+#define WAVE_INDEX_TRIANGLE 2
+#define WAVE_INDEX_NOISE    3
+#define WAVE_INDEX_DMC      4
+
 Nes_Apu::Nes_Apu() :
 	square1( &square_synth ),
 	square2( &square_synth )
@@ -141,7 +147,7 @@ void Nes_Apu::run_until( nes_time_t end_time )
 	{
 		nes_time_t start = last_dmc_time;
 		last_dmc_time = end_time;
-		dmc.run( start, end_time );
+		dmc.run( start, end_time, WAVE_INDEX_DMC );
 	}
 }
 
@@ -156,7 +162,7 @@ void Nes_Apu::run_until_( nes_time_t end_time )
 	{
 		nes_time_t start = last_dmc_time;
 		last_dmc_time = end_time;
-		dmc.run( start, end_time );
+		dmc.run( start, end_time, WAVE_INDEX_DMC );
 	}
 	
 	while ( true )
@@ -168,10 +174,10 @@ void Nes_Apu::run_until_( nes_time_t end_time )
 		frame_delay -= time - last_time;
 		
 		// run oscs to present
-		square1.run( last_time, time );
-		square2.run( last_time, time );
-		triangle.run( last_time, time );
-		noise.run( last_time, time );
+		square1.run( last_time, time, WAVE_INDEX_SQUARE1 );
+		square2.run( last_time, time, WAVE_INDEX_SQUARE2 );
+		triangle.run( last_time, time, WAVE_INDEX_TRIANGLE );
+		noise.run( last_time, time, WAVE_INDEX_NOISE );
 		last_time = time;
 		
 		if ( time == end_time )
@@ -226,13 +232,13 @@ void Nes_Apu::run_until_( nes_time_t end_time )
 }
 
 template<class T>
-inline void zero_apu_osc( T* osc, nes_time_t time )
+inline void zero_apu_osc( T* osc, nes_time_t time, int wave_index )
 {
 	Blip_Buffer* output = osc->output;
 	int last_amp = osc->last_amp;
 	osc->last_amp = 0;
 	if ( output && last_amp )
-		osc->synth.offset( time, -last_amp, output );
+		osc->synth.offset( time, -last_amp, output, wave_index );
 }
 
 void Nes_Apu::end_frame( nes_time_t end_time )
@@ -242,11 +248,11 @@ void Nes_Apu::end_frame( nes_time_t end_time )
 	
 	if ( dmc.nonlinear )
 	{
-		zero_apu_osc( &square1,  last_time );
-		zero_apu_osc( &square2,  last_time );
-		zero_apu_osc( &triangle, last_time );
-		zero_apu_osc( &noise,    last_time );
-		zero_apu_osc( &dmc,      last_time );
+		zero_apu_osc( &square1,  last_time, WAVE_INDEX_SQUARE1 );
+		zero_apu_osc( &square2,  last_time, WAVE_INDEX_SQUARE2 );
+		zero_apu_osc( &triangle, last_time, WAVE_INDEX_TRIANGLE );
+		zero_apu_osc( &noise,    last_time, WAVE_INDEX_NOISE );
+		zero_apu_osc( &dmc,      last_time, WAVE_INDEX_DMC );
 	}
 	
 	// make times relative to new frame

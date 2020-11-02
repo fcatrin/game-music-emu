@@ -292,6 +292,17 @@ void Vgm_Emu::set_voice( int i, Blip_Buffer* c, Blip_Buffer* l, Blip_Buffer* r )
 
 }
 
+// possible combinations
+// 2 PSG, 4 waves each (3 osc + 1 noise)
+// 2 YM2612, OPN2 6 waves each (1 can be a DAC)
+// 2 YM2413, OPLL 9 waves each (FM)
+
+// wave order (not perfect but matches most cases)
+// 6 YM2612 FM waves
+// 1 PCM/DAC
+// 4 PSG waves
+// 9 OPLL waves
+
 void Vgm_Emu::mute_voices_( int mask )
 {
 	Classic_Emu::mute_voices_( mask );

@@ -50,7 +50,7 @@ struct Gb_Square : Gb_Env
 	
 	void reset();
 	void clock_sweep();
-	void run( blip_time_t, blip_time_t, int playing );
+	void run( blip_time_t, blip_time_t, int playing, int wave_index );
 };
 
 struct Gb_Noise : Gb_Env
@@ -59,7 +59,7 @@ struct Gb_Noise : Gb_Env
 	Synth const* synth;
 	unsigned bits;
 	
-	void run( blip_time_t, blip_time_t, int playing );
+	void run( blip_time_t, blip_time_t, int playing, int wave_index );
 };
 
 struct Gb_Wave : Gb_Osc
@@ -71,7 +71,7 @@ struct Gb_Wave : Gb_Osc
 	uint8_t wave [wave_size];
 	
 	void write_register( int, int );
-	void run( blip_time_t, blip_time_t, int playing );
+	void run( blip_time_t, blip_time_t, int playing, int wave_index );
 };
 
 inline void Gb_Env::reset()

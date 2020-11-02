@@ -18,6 +18,8 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 
 #include "blargg_source.h"
 
+#define DAC_WAVE_INDEX 6
+
 double const min_tempo = 0.25;
 double const oversample_factor = 5 / 3.0;
 double const fm_gain = 3.0;
@@ -291,7 +293,7 @@ void Gym_Emu::run_dac( int dac_count )
 	{
 		int delta = dac_buf [i] - dac_amp;
 		dac_amp += delta;
-		dac_synth.offset_resampled( time, delta, &blip_buf );
+		dac_synth.offset_resampled( time, delta, &blip_buf, DAC_WAVE_INDEX );
 		time += period;
 	}
 	this->dac_amp = dac_amp;

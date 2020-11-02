@@ -92,7 +92,7 @@ inline nes_time_t Nes_Square::maintain_phase( nes_time_t time, nes_time_t end_ti
 	return time;
 }
 
-void Nes_Square::run( nes_time_t time, nes_time_t end_time )
+void Nes_Square::run( nes_time_t time, nes_time_t end_time, int wave_index )
 {
 	const int period = this->period();
 	const int timer_period = (period + 1) * 2;
@@ -113,7 +113,7 @@ void Nes_Square::run( nes_time_t time, nes_time_t end_time )
 	if ( volume == 0 || period < 8 || (period + offset) >= 0x800 )
 	{
 		if ( last_amp ) {
-			synth.offset( time, -last_amp, output );
+			synth.offset( time, -last_amp, output, wave_index );
 			last_amp = 0;
 		}
 		
@@ -136,7 +136,7 @@ void Nes_Square::run( nes_time_t time, nes_time_t end_time )
 		{
 			int delta = update_amp( amp );
 			if ( delta )
-				synth.offset( time, delta, output );
+				synth.offset( time, delta, output, wave_index );
 		}
 		
 		time += delay;
@@ -151,7 +151,7 @@ void Nes_Square::run( nes_time_t time, nes_time_t end_time )
 				phase = (phase + 1) & (phase_range - 1);
 				if ( phase == 0 || phase == duty ) {
 					delta = -delta;
-					synth.offset_inline( time, delta, output );
+					synth.offset_inline( time, delta, output, wave_index );
 				}
 				time += timer_period;
 			}
@@ -201,7 +201,7 @@ inline nes_time_t Nes_Triangle::maintain_phase( nes_time_t time, nes_time_t end_
 	return time;
 }
 
-void Nes_Triangle::run( nes_time_t time, nes_time_t end_time )
+void Nes_Triangle::run( nes_time_t time, nes_time_t end_time, int wave_index )
 {
 	const int timer_period = period() + 1;
 	if ( !output )
@@ -220,7 +220,7 @@ void Nes_Triangle::run( nes_time_t time, nes_time_t end_time )
 	
 	int delta = update_amp( calc_amp() );
 	if ( delta )
-		synth.offset( time, delta, output );
+		synth.offset( time, delta, output, wave_index );
 	
 	time += delay;
 	if ( length_counter == 0 || linear_counter == 0 || timer_period < 3 )
@@ -244,7 +244,7 @@ void Nes_Triangle::run( nes_time_t time, nes_time_t end_time )
 				volume = -volume;
 			}
 			else {
-				synth.offset_inline( time, volume, output );
+				synth.offset_inline( time, volume, output, wave_index );
 			}
 			
 			time += timer_period;
@@ -396,7 +396,7 @@ void Nes_Dmc::fill_buffer()
 	}
 }
 
-void Nes_Dmc::run( nes_time_t time, nes_time_t end_time )
+void Nes_Dmc::run( nes_time_t time, nes_time_t end_time, int wave_index )
 {
 	int delta = update_amp( dac );
 	if ( !output )
@@ -407,7 +407,7 @@ void Nes_Dmc::run( nes_time_t time, nes_time_t end_time )
 	{
 		output->set_modified();
 		if ( delta )
-			synth.offset( time, delta, output );
+			synth.offset( time, delta, output, wave_index );
 	}
 	
 	time += delay;
@@ -435,7 +435,7 @@ void Nes_Dmc::run( nes_time_t time, nes_time_t end_time )
 					bits >>= 1;
 					if ( unsigned (dac + step) <= 0x7F ) {
 						dac += step;
-						synth.offset_inline( time, step, output );
+						synth.offset_inline( time, step, output, wave_index );
 					}
 				}
 				
@@ -475,7 +475,7 @@ static short const noise_period_table [16] = {
 	0x0CA, 0x0FE, 0x17C, 0x1FC, 0x2FA, 0x3F8, 0x7F2, 0xFE4
 };
 
-void Nes_Noise::run( nes_time_t time, nes_time_t end_time )
+void Nes_Noise::run( nes_time_t time, nes_time_t end_time, int wave_index )
 {
 	int period = noise_period_table [regs [2] & 15];
 	
@@ -494,7 +494,7 @@ void Nes_Noise::run( nes_time_t time, nes_time_t end_time )
 	{
 		int delta = update_amp( amp );
 		if ( delta )
-			synth.offset( time, delta, output );
+			synth.offset( time, delta, output, wave_index );
 	}
 	
 	time += delay;
@@ -533,7 +533,7 @@ void Nes_Noise::run( nes_time_t time, nes_time_t end_time )
 				if ( (noise + 1) & 2 ) {
 					// bits 0 and 1 of noise differ
 					delta = -delta;
-					synth.offset_resampled( rtime, delta, output );
+					synth.offset_resampled( rtime, delta, output, wave_index );
 				}
 				
 				rtime += rperiod;

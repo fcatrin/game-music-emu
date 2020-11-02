@@ -44,14 +44,14 @@ inline void Sms_Square::reset()
 	Sms_Osc::reset();
 }
 
-void Sms_Square::run( blip_time_t time, blip_time_t end_time )
+void Sms_Square::run( blip_time_t time, blip_time_t end_time, int wave_index )
 {
 	if ( !volume || period <= 128 )
 	{
 		// ignore 16kHz and higher
 		if ( last_amp )
 		{
-			synth->offset( time, -last_amp, output );
+			synth->offset( time, -last_amp, output, wave_index );
 			last_amp = 0;
 		}
 		time += delay;
@@ -75,7 +75,7 @@ void Sms_Square::run( blip_time_t time, blip_time_t end_time )
 			if ( delta )
 			{
 				last_amp = amp;
-				synth->offset( time, delta, output );
+				synth->offset( time, delta, output, wave_index );
 			}
 		}
 		
@@ -87,7 +87,7 @@ void Sms_Square::run( blip_time_t time, blip_time_t end_time )
 			do
 			{
 				delta = -delta;
-				synth->offset_inline( time, delta, output );
+				synth->offset_inline( time, delta, output, wave_index );
 				time += period;
 				phase ^= 1;
 			}
@@ -110,7 +110,7 @@ inline void Sms_Noise::reset()
 	Sms_Osc::reset();
 }
 
-void Sms_Noise::run( blip_time_t time, blip_time_t end_time )
+void Sms_Noise::run( blip_time_t time, blip_time_t end_time, int wave_index )
 {
 	int amp = volume;
 	if ( shifter & 1 )
@@ -121,7 +121,7 @@ void Sms_Noise::run( blip_time_t time, blip_time_t end_time )
 		if ( delta )
 		{
 			last_amp = amp;
-			synth.offset( time, delta, output );
+			synth.offset( time, delta, output, wave_index );
 		}
 	}
 	
@@ -145,7 +145,7 @@ void Sms_Noise::run( blip_time_t time, blip_time_t end_time )
 			if ( changed & 2 ) // true if bits 0 and 1 differ
 			{
 				delta = -delta;
-				synth.offset_inline( time, delta, output );
+				synth.offset_inline( time, delta, output, wave_index );
 			}
 			time += period;
 		}
@@ -245,9 +245,9 @@ void Sms_Apu::run_until( blip_time_t end_time )
 			{
 				osc.output->set_modified();
 				if ( i < 3 )
-					squares [i].run( last_time, end_time );
+					squares [i].run( last_time, end_time, i );
 				else
-					noise.run( last_time, end_time );
+					noise.run( last_time, end_time, i );
 			}
 		}
 		
@@ -282,7 +282,7 @@ void Sms_Apu::write_ggstereo( blip_time_t time, int data )
 			if ( old_output )
 			{
 				old_output->set_modified();
-				square_synth.offset( time, -osc.last_amp, old_output );
+				square_synth.offset( time, -osc.last_amp, old_output, i );
 			}
 			osc.last_amp = 0;
 		}

@@ -83,7 +83,7 @@ void Nes_Fme7_Apu::run_until( blip_time_t end_time )
 			if ( delta )
 			{
 				oscs [index].last_amp = amp;
-				synth.offset( last_time, delta, osc_output );
+				synth.offset( last_time, delta, osc_output, index );
 			}
 		}
 		
@@ -96,7 +96,7 @@ void Nes_Fme7_Apu::run_until( blip_time_t end_time )
 				do
 				{
 					delta = -delta;
-					synth.offset_inline( time, delta, osc_output );
+					synth.offset_inline( time, delta, osc_output, index );
 					time += period;
 				}
 				while ( time < end_time );

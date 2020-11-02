@@ -28,7 +28,7 @@ struct Hes_Osc
 	enum { amp_range = 0x8000 };
 	typedef Blip_Synth<blip_med_quality,1> synth_t;
 	
-	void run_until( synth_t& synth, blip_time_t );
+	void run_until( synth_t& synth, blip_time_t, int osc_index );
 };
 
 class Hes_Apu {

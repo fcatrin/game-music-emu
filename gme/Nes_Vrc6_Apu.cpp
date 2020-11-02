@@ -15,6 +15,8 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 
 #include "blargg_source.h"
 
+#define WAVE_INDEX_SAW 2
+
 Nes_Vrc6_Apu::Nes_Vrc6_Apu()
 {
 	output( NULL );
@@ -46,8 +48,8 @@ void Nes_Vrc6_Apu::output( Blip_Buffer* buf )
 void Nes_Vrc6_Apu::run_until( blip_time_t time )
 {
 	require( time >= last_time );
-	run_square( oscs [0], time );
-	run_square( oscs [1], time );
+	run_square( oscs [0], time, 0 );
+	run_square( oscs [1], time, 1 );
 	run_saw( time );
 	last_time = time;
 }
@@ -102,7 +104,7 @@ void Nes_Vrc6_Apu::load_state( vrc6_apu_state_t const& in )
 		oscs [2].phase = 1;
 }
 
-void Nes_Vrc6_Apu::run_square( Vrc6_Osc& osc, blip_time_t end_time )
+void Nes_Vrc6_Apu::run_square( Vrc6_Osc& osc, blip_time_t end_time, int wave_index )
 {
 	Blip_Buffer* output = osc.output;
 	if ( !output )
@@ -120,7 +122,7 @@ void Nes_Vrc6_Apu::run_square( Vrc6_Osc& osc, blip_time_t end_time )
 	if ( delta )
 	{
 		osc.last_amp += delta;
-		square_synth.offset( time, delta, output );
+		square_synth.offset( time, delta, output, wave_index );
 	}
 	
 	time += osc.delay;
@@ -139,12 +141,12 @@ void Nes_Vrc6_Apu::run_square( Vrc6_Osc& osc, blip_time_t end_time )
 				{
 					phase = 0;
 					osc.last_amp = volume;
-					square_synth.offset( time, volume, output );
+					square_synth.offset( time, volume, output, wave_index );
 				}
 				if ( phase == duty )
 				{
 					osc.last_amp = 0;
-					square_synth.offset( time, -volume, output );
+					square_synth.offset( time, -volume, output, wave_index );
 				}
 				time += period;
 			}
@@ -173,7 +175,7 @@ void Nes_Vrc6_Apu::run_saw( blip_time_t end_time )
 		osc.delay = 0;
 		int delta = (amp >> 3) - last_amp;
 		last_amp = amp >> 3;
-		saw_synth.offset( time, delta, output );
+		saw_synth.offset( time, delta, output, WAVE_INDEX_SAW );
 	}
 	else
 	{
@@ -195,7 +197,7 @@ void Nes_Vrc6_Apu::run_saw( blip_time_t end_time )
 				if ( delta )
 				{
 					last_amp = amp >> 3;
-					saw_synth.offset( time, delta, output );
+					saw_synth.offset( time, delta, output, WAVE_INDEX_SAW );
 				}
 				
 				time += period;

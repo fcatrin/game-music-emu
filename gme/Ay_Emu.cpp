@@ -346,7 +346,7 @@ void ay_cpu_out( Ay_Cpu* cpu, cpu_time_t time, unsigned addr, int data )
 			emu.beeper_delta = -delta;
 			emu.spectrum_mode = true;
 			if ( emu.beeper_output )
-				emu.apu.synth_.offset( time, delta, emu.beeper_output );
+				emu.apu.synth_.offset( time, delta, emu.beeper_output, Ay_Apu::osc_count );
 		}
 	}
 	else

@@ -52,7 +52,7 @@ void Scc_Apu::run_until( blip_time_t end_time )
 			if ( delta )
 			{
 				osc.last_amp = amp;
-				synth.offset( last_time, delta, output );
+				synth.offset( last_time, delta, output, index );
 			}
 		}
 		
@@ -81,7 +81,7 @@ void Scc_Apu::run_until( blip_time_t end_time )
 					if ( delta )
 					{
 						last_wave = amp;
-						synth.offset( time, delta * volume, output );
+						synth.offset( time, delta * volume, output, index );
 					}
 					time += period;
 				}

@@ -275,7 +275,7 @@ void Ay_Apu::run_until( blip_time_t final_end_time )
 				if ( delta )
 				{
 					osc->last_amp = amp;
-					synth_.offset( start_time, delta, osc_output );
+					synth_.offset( start_time, delta, osc_output, index );
 				}
 			}
 			
@@ -303,7 +303,7 @@ void Ay_Apu::run_until( blip_time_t final_end_time )
 							if ( changed & 2 )
 							{
 								delta = -delta;
-								synth_.offset( ntime, delta, osc_output );
+								synth_.offset( ntime, delta, osc_output, index );
 							}
 							ntime += noise_period;
 						}
@@ -325,7 +325,7 @@ void Ay_Apu::run_until( blip_time_t final_end_time )
 						while ( time < end )
 						{
 							delta = -delta;
-							synth_.offset( time, delta, osc_output );
+							synth_.offset( time, delta, osc_output, index );
 							time += period;
 							//phase ^= 1;
 						}

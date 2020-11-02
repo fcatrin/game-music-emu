@@ -19,6 +19,8 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 
 #include "blargg_source.h"
 
+#define WAVE_INDEX_DAC 6
+
 enum {
 	cmd_gg_stereo       = 0x4F,
 	cmd_psg             = 0x50,
@@ -113,7 +115,7 @@ void Vgm_Emu_Impl::write_pcm( vgm_time_t vgm_time, int amp )
 	int delta = amp - old;
 	dac_amp = amp;
 	if ( old >= 0 )
-		dac_synth.offset_inline( blip_time, delta, &blip_buf );
+		dac_synth.offset_inline( blip_time, delta, &blip_buf, WAVE_INDEX_DAC );
 	else
 		dac_amp |= dac_disabled;
 }

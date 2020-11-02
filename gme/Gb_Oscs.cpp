@@ -110,7 +110,7 @@ void Gb_Square::clock_sweep()
 	}
 }
 
-void Gb_Square::run( blip_time_t time, blip_time_t end_time, int playing )
+void Gb_Square::run( blip_time_t time, blip_time_t end_time, int playing, int wave_index )
 {
 	if ( sweep_freq == 2048 )
 		playing = false;
@@ -134,7 +134,7 @@ void Gb_Square::run( blip_time_t time, blip_time_t end_time, int playing )
 		if ( delta )
 		{
 			last_amp = amp;
-			synth->offset( time, delta, output );
+			synth->offset( time, delta, output, wave_index );
 		}
 	}
 	
@@ -154,7 +154,7 @@ void Gb_Square::run( blip_time_t time, blip_time_t end_time, int playing )
 			if ( phase == 0 || phase == duty )
 			{
 				delta = -delta;
-				synth->offset_inline( time, delta, output );
+				synth->offset_inline( time, delta, output, wave_index );
 			}
 			time += period;
 		}
@@ -168,7 +168,7 @@ void Gb_Square::run( blip_time_t time, blip_time_t end_time, int playing )
 
 // Gb_Noise
 
-void Gb_Noise::run( blip_time_t time, blip_time_t end_time, int playing )
+void Gb_Noise::run( blip_time_t time, blip_time_t end_time, int playing, int wave_index )
 {
 	int amp = volume & playing;
 	int tap = 13 - (regs [3] & 8);
@@ -180,7 +180,7 @@ void Gb_Noise::run( blip_time_t time, blip_time_t end_time, int playing )
 		if ( delta )
 		{
 			last_amp = amp;
-			synth->offset( time, delta, output );
+			synth->offset( time, delta, output, wave_index );
 		}
 	}
 	
@@ -210,7 +210,7 @@ void Gb_Noise::run( blip_time_t time, blip_time_t end_time, int playing )
 			{
 				delta = -delta;
 				bits |= 1;
-				synth->offset_resampled( resampled_time, delta, output );
+				synth->offset_resampled( resampled_time, delta, output, wave_index );
 			}
 			resampled_time += resampled_period;
 		}
@@ -252,7 +252,7 @@ inline void Gb_Wave::write_register( int reg, int data )
 	}
 }
 
-void Gb_Wave::run( blip_time_t time, blip_time_t end_time, int playing )
+void Gb_Wave::run( blip_time_t time, blip_time_t end_time, int playing, int wave_index )
 {
 	int volume_shift = (volume - 1) & 7; // volume = 0 causes shift = 7
 	int frequency;
@@ -270,7 +270,7 @@ void Gb_Wave::run( blip_time_t time, blip_time_t end_time, int playing )
 		if ( delta )
 		{
 			last_amp = amp;
-			synth->offset( time, delta, output );
+			synth->offset( time, delta, output, wave_index );
 		}
 	}
 	
@@ -292,7 +292,7 @@ void Gb_Wave::run( blip_time_t time, blip_time_t end_time, int playing )
 			if ( delta )
 			{
 				last_amp = amp;
-				synth->offset_inline( time, delta, output );
+				synth->offset_inline( time, delta, output, wave_index );
 			}
 			time += period;
 		}

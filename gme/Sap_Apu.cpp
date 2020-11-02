@@ -160,7 +160,7 @@ void Sap_Apu::run_until( blip_time_t end_time )
 				if ( delta )
 				{
 					osc->last_amp = volume;
-					impl->synth.offset( last_time, delta, output );
+					impl->synth.offset( last_time, delta, output, i );
 				}
 				
 				// TODO: doesn't maintain high pass flip-flop (very minor issue)
@@ -233,7 +233,7 @@ void Sap_Apu::run_until( blip_time_t end_time )
 							{
 								osc_last_amp += delta - volume;
 								volume = -volume;
-								impl->synth.offset( time2, delta, output );
+								impl->synth.offset( time2, delta, output, i );
 							}
 						}
 						while ( time2 <= time ) // must advance *past* time to avoid hang
@@ -254,7 +254,7 @@ void Sap_Apu::run_until( blip_time_t end_time )
 								if ( delta )
 								{
 									osc_last_amp = amp;
-									impl->synth.offset( time, delta, output );
+									impl->synth.offset( time, delta, output, i );
 								}
 							}
 							wave = run_poly5( wave, poly5_inc );

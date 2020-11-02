@@ -25,6 +25,8 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 
 int const silent_buf_size = 1; // size used for Silent_Blip_Buffer
 
+struct wave_buffer wave_buffers[MAX_WAVES];
+
 Blip_Buffer::Blip_Buffer()
 {
 	factor_       = (blip_ulong)-1 / 2;
